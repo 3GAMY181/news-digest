@@ -1,9 +1,15 @@
-import feedparser
+from fastapi import FastAPI
 
-url = "https://feeds.bbci.co.uk/news/technology/rss.xml"
-feed = feedparser.parse(url)
+from app.news import build_digest
 
-for entry in feed.entries[:5]:
-    print(entry.title)
-    print(entry.link)
-    print()
+app = FastAPI(title="News Digest API")
+
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}
+
+
+@app.get("/digest")
+def digest(limit: int = 10):
+    return build_digest(limit)
