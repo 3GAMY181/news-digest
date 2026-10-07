@@ -1,5 +1,7 @@
 import feedparser
 
+from app.db import save_new_news
+
 FEEDS = [
     "https://feeds.bbci.co.uk/news/technology/rss.xml",
     "https://techcrunch.com/feed/",
@@ -44,8 +46,9 @@ def build_digest(limit=10):
     for url in FEEDS:
         all_news.extend(fetch_news(url))
     filtered = filter_news(all_news, KEYWORDS)[:limit]
+    new_items = save_new_news(filtered)
     return {
-        "count": len(filtered),
-        "items": filtered,
-        "text": format_digest(filtered),
+        "count": len(new_items),
+        "items": new_items,
+        "text": format_digest(new_items),
     }
