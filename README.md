@@ -3,11 +3,14 @@
 AI-powered news digest built with Python and n8n.
 
 ## Status
+
 v0.1: Python script that fetches the latest tech news from an RSS feed.
+
+v0.2: FastAPI endpoints + n8n workflow that sends the digest to Telegram.
 
 ## Roadmap
 - [x] v0.1: Fetch news from RSS
-- [ ] v0.2: FastAPI + n8n workflow (send digest to Telegram)
+- [x] v0.2: FastAPI + n8n workflow (send digest to Telegram)
 - [ ] v0.3: Store news in a database, avoid duplicates
 - [ ] v0.4: Summarize and classify news with an LLM
 - [ ] v0.5: Docker + docker-compose
