@@ -24,3 +24,7 @@ v0.3: SQLite storage to avoid sending duplicate news.
     venv\Scripts\Activate.ps1
     pip install -r requirements.txt
     python app/main.py
+
+## n8n Workflow
+Import `n8n/workflow.json` from the n8n UI (Workflows → Import from File),
+then set your own Telegram credentials and chat ID.
