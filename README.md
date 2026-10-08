@@ -12,12 +12,14 @@ v0.3: SQLite storage to avoid sending duplicate news.
 
 v0.4: LLM integration to summarize and classify news before sending it to Telegram.
 
+v0.5: Containerized the FastAPI app and SQLite database using Docker and docker-compose.
+
 ## Roadmap
 - [x] v0.1: Fetch news from RSS
 - [x] v0.2: FastAPI + n8n workflow (send digest to Telegram)
 - [x] v0.3: Store news in a database, avoid duplicates
 - [x] v0.4: Summarize and classify news with an LLM
-- [ ] v0.5: Docker + docker-compose
+- [x] v0.5: Docker + docker-compose
 - [ ] v0.6: Tests + GitHub Actions
 - [ ] v1.0: Dashboard + full documentation
 
