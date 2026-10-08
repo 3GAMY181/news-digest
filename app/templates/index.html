@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>News Digest Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-8 font-sans">
+    <div class="max-w-5xl mx-auto">
+        <h1 class="text-4xl font-bold text-center text-blue-700 mb-8">News Digest Dashboard</h1>
+        
+        <div id="news-container" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- الأخبار هتظهر هنا -->
+            <p class="text-center text-gray-500 col-span-2">Loading news...</p>
+        </div>
+    </div>
+
+    <script>
+        async function fetchNews() {
+            try {
+                // هنجيب البيانات من الـ endpoint بتاع الـ history
+                const response = await fetch('/history');
+                const data = await response.json();
+                const container = document.getElementById('news-container');
+                container.innerHTML = ''; // تفريغ المحتوى القديم
+
+                if (data.length === 0) {
+                    container.innerHTML = '<p class="text-center text-gray-500 col-span-2">No news found in the database.</p>';
+                    return;
+                }
+
+                data.forEach(news => {
+                    const card = `
+                        <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow border-l-4 border-blue-500">
+                            <h2 class="text-xl font-bold mb-2 text-gray-800">${news.title || 'No Title'}</h2>
+                            <p class="text-gray-600 mb-4 line-clamp-3">${news.summary || 'No summary available.'}</p>
+                            <div class="flex justify-between items-center text-sm border-t pt-4 mt-2">
+                                <span class="bg-blue-100 text-blue-800 py-1 px-3 rounded-full font-semibold">${news.category || 'General'}</span>
+                                <a href="${news.url}" target="_blank" class="text-blue-600 hover:text-blue-800 font-bold hover:underline">Read Source &rarr;</a>
+                            </div>
+                        </div>
+                    `;
+                    container.innerHTML += card;
+                });
+            } catch (error) {
+                console.error('Error fetching news:', error);
+                document.getElementById('news-container').innerHTML = '<p class="text-center text-red-500 col-span-2">Error loading news. Make sure the API is running.</p>';
+            }
+        }
+
+        // تشغيل الدالة أول ما الصفحة تفتح
+        fetchNews();
+    </script>
+</body>
+</html>

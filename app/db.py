@@ -14,7 +14,7 @@ def get_connection():
 
 
 def init_db():
-    """بيعمل جدول الأخبار لو مش موجود"""
+    """بيعمل جدول الأخبار، وبيضيف عمودي الملخص والتصنيف لو ناقصين"""
     with closing(get_connection()) as conn:
         with conn:
             conn.execute(
@@ -27,6 +27,11 @@ def init_db():
                 )
                 """
             )
+            existing = {row["name"] for row in conn.execute("PRAGMA table_info(news)")}
+            if "summary" not in existing:
+                conn.execute("ALTER TABLE news ADD COLUMN summary TEXT")
+            if "category" not in existing:
+                conn.execute("ALTER TABLE news ADD COLUMN category TEXT")
 
 
 def save_new_news(news):
@@ -44,16 +49,6 @@ def save_new_news(news):
     return new_items
 
 
-def get_history(limit=20):
-    """بيرجّع آخر الأخبار المحفوظة"""
-    with closing(get_connection()) as conn:
-        rows = conn.execute(
-            "SELECT title, link, created_at FROM news ORDER BY id DESC LIMIT ?",
-            (limit,),
-        ).fetchall()
-    return [dict(row) for row in rows]
-
-
 def filter_unseen(news):
     """بيرجّع الأخبار اللي لسه متخزنتش"""
     with closing(get_connection()) as conn:
@@ -62,10 +57,27 @@ def filter_unseen(news):
 
 
 def save_news(item):
-    """بيحفظ خبر واحد"""
+    """بيحفظ خبر واحد مع الملخص والتصنيف (لو موجودين)"""
     with closing(get_connection()) as conn:
         with conn:
             conn.execute(
-                "INSERT OR IGNORE INTO news (title, link) VALUES (?, ?)",
-                (item["title"], item["link"]),
+                "INSERT OR IGNORE INTO news (title, link, summary, category) "
+                "VALUES (?, ?, ?, ?)",
+                (
+                    item["title"],
+                    item["link"],
+                    item.get("summary"),
+                    item.get("category"),
+                ),
             )
+
+
+def get_history(limit=20):
+    """بيرجّع آخر الأخبار المحفوظة"""
+    with closing(get_connection()) as conn:
+        rows = conn.execute(
+            "SELECT title, link, summary, category, created_at "
+            "FROM news ORDER BY id DESC LIMIT ?",
+            (limit,),
+        ).fetchall()
+    return [dict(row) for row in rows]

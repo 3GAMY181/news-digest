@@ -14,12 +14,14 @@ RETRIES = 4
 
 
 def _generate(client, prompt):
-    """بيحاول يكلّم الموديل، ولو فيه ضغط (503) أو حد طلبات (429) بيستنى ويعيد"""
+    """بيكلّم الموديل، ولو فيه ضغط مؤقت بيستنى ويعيد"""
     for attempt in range(RETRIES):
         try:
             return client.models.generate_content(model=MODEL, contents=prompt)
         except (errors.ServerError, errors.ClientError) as e:
             code = getattr(e, "code", None)
+            if code == 429 and "PerDay" in str(e):
+                raise  # الحصة اليومية خلصت، الإعادة مالهاش لازمة
             retryable = code in (429, 500, 503)
             if not retryable or attempt == RETRIES - 1:
                 raise
@@ -49,14 +51,15 @@ def summarize_and_classify(title, description=""):
         data = json.loads(text)
     except json.JSONDecodeError:
         return fallback
-    if data.get("category") not in CATEGORIES:
-        data["category"] = "Other"
-        return {
+
+    category = data.get("category")
+    if category not in CATEGORIES:
+        category = "Other"
+    return {
         "summary": data.get("summary", title),
-        "category": data["category"],
+        "category": category,
         "ok": True,
     }
-    
 
 
 if __name__ == "__main__":

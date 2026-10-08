@@ -70,16 +70,16 @@ def build_digest(limit=5):
             time.sleep(PAUSE_SECONDS)
         result = summarize_and_classify(item["title"], item.get("description", ""))
         if not result["ok"]:
-            continue  # الـ LLM فشل: منحفظهوش، هيتعاد المرة الجاية
-        save_news(item)
-        enriched.append(
-            {
-                "title": item["title"],
-                "link": item["link"],
-                "summary": result["summary"],
-                "category": result["category"],
-            }
-        )
+            continue  # LLM failed: do not save, retry on the next run
+        entry = {
+            "title": item["title"],
+            "link": item["link"],
+            "summary": result["summary"],
+            "category": result["category"],
+        }
+        save_news(entry)
+        enriched.append(entry)
+
     return {
         "count": len(enriched),
         "items": enriched,
