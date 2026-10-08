@@ -16,13 +16,16 @@ v0.5: Containerized the FastAPI app and SQLite database using Docker and docker-
 
 - Verified End-to-End integration: n8n successfully communicates with the Dockerized FastAPI to summarize and send news to Telegram.
 
+v0.6: Added automated testing with pytest and set up a CI pipeline using GitHub Actions.
+
+
 ## Roadmap
 - [x] v0.1: Fetch news from RSS
 - [x] v0.2: FastAPI + n8n workflow (send digest to Telegram)
 - [x] v0.3: Store news in a database, avoid duplicates
 - [x] v0.4: Summarize and classify news with an LLM
 - [x] v0.5: Docker + docker-compose
-- [ ] v0.6: Tests + GitHub Actions
+- [x] v0.6: Tests + GitHub Actions
 - [ ] v1.0: Dashboard + full documentation
 
 ## Setup
