@@ -52,3 +52,20 @@ def get_history(limit=20):
             (limit,),
         ).fetchall()
     return [dict(row) for row in rows]
+
+
+def filter_unseen(news):
+    """بيرجّع الأخبار اللي لسه متخزنتش"""
+    with closing(get_connection()) as conn:
+        seen = {row["link"] for row in conn.execute("SELECT link FROM news")}
+    return [item for item in news if item["link"] not in seen]
+
+
+def save_news(item):
+    """بيحفظ خبر واحد"""
+    with closing(get_connection()) as conn:
+        with conn:
+            conn.execute(
+                "INSERT OR IGNORE INTO news (title, link) VALUES (?, ?)",
+                (item["title"], item["link"]),
+            )

@@ -1,6 +1,10 @@
+import re
+import time
+
 import feedparser
 
-from app.db import save_new_news
+from app.db import filter_unseen, save_news
+from app.llm import summarize_and_classify
 
 FEEDS = [
     "https://feeds.bbci.co.uk/news/technology/rss.xml",
@@ -9,46 +13,75 @@ FEEDS = [
 
 KEYWORDS = ["ai", "python", "openai", "google"]
 
+# الـ free tier ليه حد طلبات في الدقيقة، فبنستنى بين كل خبر
+PAUSE_SECONDS = 6
+
 
 def fetch_news(feed_url):
     """بيجيب الأخبار من رابط RSS واحد"""
     feed = feedparser.parse(feed_url)
     news = []
     for entry in feed.entries:
-        news.append({"title": entry.title, "link": entry.link})
+        news.append(
+            {
+                "title": entry.title,
+                "link": entry.link,
+                "description": entry.get("summary", "")[:500],
+            }
+        )
     return news
 
 
 def filter_news(news, keywords):
-    """بيرجّع بس الأخبار اللي فيها كلمة من الكلمات المفتاحية"""
-    result = []
-    for item in news:
-        title = item["title"].lower()
-        for word in keywords:
-            if word in title:
-                result.append(item)
-                break
-    return result
+    """بيرجّع الأخبار اللي فيها كلمة مفتاحية كاملة (مش جزء من كلمة)"""
+    pattern = re.compile(
+        r"\b(" + "|".join(re.escape(k) for k in keywords) + r")\b",
+        re.IGNORECASE,
+    )
+    return [item for item in news if pattern.search(item["title"])]
 
 
 def format_digest(news):
-    """بيحوّل الأخبار لنص جاهز للإرسال"""
+    """بيحوّل الأخبار لنص جاهز للإرسال، مجمّعة حسب التصنيف"""
     if not news:
         return "مفيش أخبار جديدة النهارده."
+    groups = {}
+    for item in news:
+        groups.setdefault(item["category"], []).append(item)
     lines = ["📰 ملخص الأخبار:\n"]
-    for i, item in enumerate(news, start=1):
-        lines.append(f"{i}. {item['title']}\n{item['link']}\n")
+    for category, items in groups.items():
+        lines.append(f"🔹 {category}")
+        for item in items:
+            lines.append(f"• {item['summary']}\n{item['link']}")
+        lines.append("")
     return "\n".join(lines)
 
 
-def build_digest(limit=10):
+def build_digest(limit=5):
     all_news = []
     for url in FEEDS:
         all_news.extend(fetch_news(url))
-    filtered = filter_news(all_news, KEYWORDS)[:limit]
-    new_items = save_new_news(filtered)
+    filtered = filter_news(all_news, KEYWORDS)
+    unseen = filter_unseen(filtered)[:limit]
+
+    enriched = []
+    for i, item in enumerate(unseen):
+        if i > 0:
+            time.sleep(PAUSE_SECONDS)
+        result = summarize_and_classify(item["title"], item.get("description", ""))
+        if not result["ok"]:
+            continue  # الـ LLM فشل: منحفظهوش، هيتعاد المرة الجاية
+        save_news(item)
+        enriched.append(
+            {
+                "title": item["title"],
+                "link": item["link"],
+                "summary": result["summary"],
+                "category": result["category"],
+            }
+        )
     return {
-        "count": len(new_items),
-        "items": new_items,
-        "text": format_digest(new_items),
+        "count": len(enriched),
+        "items": enriched,
+        "text": format_digest(enriched),
     }

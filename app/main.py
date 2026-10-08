@@ -14,7 +14,7 @@ def health():
 
 
 @app.get("/digest")
-def digest(limit: int = 10):
+def digest(limit: int = 5):
     return build_digest(limit)
 
 
