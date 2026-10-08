@@ -14,6 +14,8 @@ v0.4: LLM integration to summarize and classify news before sending it to Telegr
 
 v0.5: Containerized the FastAPI app and SQLite database using Docker and docker-compose.
 
+- Verified End-to-End integration: n8n successfully communicates with the Dockerized FastAPI to summarize and send news to Telegram.
+
 ## Roadmap
 - [x] v0.1: Fetch news from RSS
 - [x] v0.2: FastAPI + n8n workflow (send digest to Telegram)
