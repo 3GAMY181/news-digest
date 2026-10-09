@@ -13,6 +13,11 @@ AI-powered news digest: collects tech news from RSS feeds, summarizes and classi
 - Docker and docker-compose setup
 - Automated tests (pytest) and CI (GitHub Actions)
 
+## Dashboard
+
+![Dashboard](docs/dashboard.png)
+
+
 ## Architecture
 
 ```mermaid
